@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch Song Lyrics</title>
+    <style>
+        body {
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ69-D8nKxI9AThFqZTcW7DCIUpNINUHcfwcA&usqp=CAU'); /* Background image URL */
+            background-size: cover;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"],
+        input[type="submit"] {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50; /* Green submit button */
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        #output {
+            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            overflow-y: auto; /* Enable vertical scrollbar if content exceeds the height */
+            max-height: 60vh; /* Limit height to 60% of viewport height */
+        }
+        #output img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<form id="songForm" method="get">
+    <label for="song">Enter Song Name:</label><br>
+    <input type="text" id="song" name="song"><br><br>
+    <input type="submit" value="Fetch Lyrics">
+</form>
+
+<div id="output"></div>
+
+<script>
+document.getElementById("songForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent default form submission
+    var songName = document.getElementById("song").value;
+    var formAction = "https://lyrist.vercel.app/api/" + songName;
+    fetch(formAction)
+        .then(response => response.json())
+        .then(data => {
+            // Check if image URL is available in the response
+            var outputHTML = "";
+            if (data.image) {
+                outputHTML += "<img src='" + data.image + "' alt='Song Image'><br>";
+            }
+            // Replace newline characters with <br> tags in the lyrics
+            var lyricsWithLineBreaks = data.lyrics.replace(/\n/g, "<br>");
+            // Apply formatting to text within square brackets, parentheses, or curly braces
+            lyricsWithLineBreaks = lyricsWithLineBreaks.replace(/\[(.*?)\]/g, "<span style='color: blue; font-weight: bold;'>[$1]</span>");
+            lyricsWithLineBreaks = lyricsWithLineBreaks.replace(/\((.*?)\)/g, "<span style='color: red; font-weight: bold;'>($1)</span>");
+            lyricsWithLineBreaks = lyricsWithLineBreaks.replace(/\{(.*?)\}/g, "<span style='color: green; font-weight: bold;'>{$1}</span>");
+            // Append formatted song lyrics
+            outputHTML += "<pre>" + lyricsWithLineBreaks + "</pre>";
+            // Update output div
+            document.getElementById("output").innerHTML = outputHTML;
+            document.getElementById("output").style.display = "block";
+        })
+        .catch(error => {
+            document.getElementById("output").innerHTML = "Error: Unable to fetch data from the external API";
+            document.getElementById("output").style.display = "block";
+        });
+});
+</script>
+
+</body>
+</html>
